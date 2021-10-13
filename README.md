@@ -34,4 +34,4 @@ To test the package the \__exe__ function must be called and the sensors input v
 
 Then, the program will print the Predictions and the Errors.
 
-
+Example of the possible input values for sensors are given in the 'data' folder.
