@@ -21,11 +21,11 @@ In this initial release of the project just the prediction part is integrated. S
 
 First the installed package must be imported:
 
->>> import dataqualitySCP as dq
+>> import dataqualitySCP as dq
 
 To test the package the __exe__ function must be called and the sensors input values must be manually inserted. For example:
 
->>> dq.__exe__()
+>> dq.__exe__()
 Irradiance: 300
 Flow: 12
 Ambient Temperature: 30
