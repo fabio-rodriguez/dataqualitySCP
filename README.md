@@ -7,11 +7,11 @@ This is a project for Fault Detection and Offset Prediction of sensor values in 
 
 The requirements.txt file must be installing (Python 3.8):
 
-$> pip install -r requirements.txt
+>$ pip install -r requirements.txt
 
 Then, the dataqualitySCP package must be installed: 
 
-$> python setup.py install
+>$ python setup.py install
 
 # How to use
 
@@ -21,16 +21,16 @@ In this initial release of the project just the prediction part is integrated. S
 
 First the installed package must be imported:
 
->> import dataqualitySCP as dq
+> import dataqualitySCP as dq
 
-To test the package the __exe__ function must be called and the sensors input values must be manually inserted. For example:
+To test the package the \__exe__ function must be called and the sensors input values must be manually inserted. For example:
 
->> dq.__exe__()
-Irradiance: 300
-Flow: 12
-Ambient Temperature: 30
-Inlet Temperature: 150
-Outlet Temperature: 160
+> dq.\__exe__()
+> Irradiance: 300
+> Flow: 12
+> Ambient Temperature: 30
+> Inlet Temperature: 150
+> Outlet Temperature: 160
 
 Then, the program will print the Predictions and the Errors.
 
