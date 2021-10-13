@@ -27,8 +27,7 @@ To test the package the \__exe__ function must be called and the sensors input v
 
 > dq.\__exe__()
 
-> Irradiance: 300
-
+> Irradiance: 300;\
 > Flow: 12
 
 > Ambient Temperature: 30
