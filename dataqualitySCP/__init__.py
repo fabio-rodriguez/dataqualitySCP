@@ -1,7 +1,9 @@
 
 from multiprocessing import Process, Queue
 
-from .prediction import *
+from constants import *
+from prediction import predict
+from evaluation import evaluate
 
 
 def read_inputs():
@@ -15,25 +17,38 @@ def read_inputs():
 
     values = [irr, flow, tamb, tin, tout]
 
-    return {k: v for k, v in zip(keys, values)}
+    return {k: v for k, v in zip(KEYS, values)}
 
 
 def __exe__():
 
+    evaluate({k: v for k, v in zip(KEYS, [100,10,30,100,120])}, None)
+    
     input = read_inputs()
 
     l1 = Queue()
     p1 = Process(target=predict, args=(input, l1, ))  
     l2 = Queue()
-    p2 = Process(target=func1, args=(200, l2, )) 
+    p2 = Process(target=evaluate, args=(input, l2, )) 
     p1.start()   
-    p2.start()      
-    print_prediction_output(*l1.get()) 
-    # print(l2.get())
+    p2.start()     
+    
+    predictions, errors = l1.get()
+    evaluations = l2.get()
+    print_output(evaluations, predictions, errors) 
 
 
-def func1(x, l1):
-    l1.put(1)
+def print_output(evaluations, predictions, errors):
+    
+    print ("{:<8} {:<15} {:<15} {:<10}".format('SENSOR', 'FAULT FREE', 'PREDICTION','ERROR'))
+
+    for k in PREDICTION_KEYS:
+        print ("{:<8} {:<15} {:<15} {:<10}".format( 
+            k, 
+            "NO" if evaluations[k] else "YES", 
+            str(round(predictions[k][0], 3)), 
+            str(round(errors[k], 3))
+        ))
 
 
 if __name__ == '__main__':

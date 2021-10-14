@@ -5,7 +5,7 @@ import numpy as np
 from math import *
 from sklearn import preprocessing
 
-from .constants import *
+from constants import *
 
 
 def path_to_prediction_models(path="/models/prediction"):
@@ -13,12 +13,13 @@ def path_to_prediction_models(path="/models/prediction"):
 
     irr = "irradiance_model.h5"
     flow = "flow_model.h5"
+    tamb = "tamb_model.h5"
     tin = "tin_model.h5"
     tout = "tout_model.h5"
 
-    models = [irr, flow, tin, tout]
+    models = [irr, flow, tamb, tin, tout]
     
-    return {k: f'{ROOT_DIR}/{path}/{m}' for k, m in zip(prediction_keys, models)}
+    return {k: f'{ROOT_DIR}/{path}/{m}' for k, m in zip(PREDICTION_KEYS, models)}
 
 
 def get_predictions_scaler(path="./norm_scales"):
@@ -32,13 +33,13 @@ def predict(input, l1):
     models = path_to_prediction_models()
     scaler = get_predictions_scaler()
     
-    Xs = [input[k] for k in keys]
+    Xs = [input[k] for k in KEYS]
     Xs_norm = scaler.transform([Xs])
     
     predictions = {}
     errors = {}
 
-    for i, k in enumerate(keys):
+    for i, k in enumerate(KEYS):
         if k not in models.keys():
             continue
 
@@ -59,6 +60,6 @@ def print_prediction_output(predictions, errors):
     
     print ("{:<8} {:<15} {:<10}".format('SENSOR','PREDICTION','ERROR'))
 
-    for k in prediction_keys:
+    for k in PREDICTION_KEYS:
         print ("{:<8} {:<15} {:<10}".format( k, str(round(predictions[k][0], 3)), str(round(errors[k], 3))))
 
