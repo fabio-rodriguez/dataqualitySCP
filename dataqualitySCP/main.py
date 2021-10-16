@@ -90,14 +90,11 @@ def parse_input():
         data_set_root = args.data_set_root
         outputs_path = args.outputs_path
 
-        assert data_set_root != None, \
-            f'[ERROR]: --data-set-root must be specified."'
+        assert data_set_root != None and outputs_path != None, \
+            f'[ERROR]: "--data-set-root" and "--outputs-path" arguments must be specified."'
 
         assert os.path.isfile(data_set_root), \
             f'[ERROR]: Data set file not found at "{data_set_root}"'
-
-        assert outputs_path != None, \
-            f'[ERROR]: --outputs-path must be specified.'
 
         assert os.path.isdir(outputs_path), \
             f'[ERROR]: Directory not found at "{outputs_path}"'
@@ -106,14 +103,17 @@ def parse_input():
         makepredictions_dataset(data_set_root, outputs_path)
     else:
         try:
-            irr = args.irr
-            flow = args.flow
-            tamb = args.tamb
-            tin = args.tin
-            tout = args.tout
+            irr = float(args.irr)
+            flow = float(args.flow)
+            tamb = float(args.tamb)
+            tin = float(args.tin)
+            tout = float(args.tout)
         except:
-            print("[ERROR]: The ['--irr', '--flow', '--tamb', '--tin', '--tout'] arguments must be given")
+            print('[ERROR]: "--irr", "--flow", "--tamb", "--tin" and "--tout" arguments must be specified as float values.')
             exit(1)
+
+        assert irr and flow and tamb and tin and tout, \
+            f'"--irr", "--flow", "--tamb", "--tin" and "--tout" arguments must be specified as float values.'
 
         #TODO
         makepredictions_simple(irr, flow, tamb, tin, tout)
@@ -124,8 +124,14 @@ def makepredictions_dataset(dataset_root, outputs_path):
     print("dataset_root", dataset_root)
     print("outputs_path", outputs_path)
 
+
 def makepredictions_simple(irr, flow, tamb, tin, tout):
-    pass
+    print("Arguments:")
+    print("irr", irr)
+    print("flow", flow)
+    print("tamb", tamb)
+    print("tin", tin)
+    print("tout", tout)
 
 
 if __name__ == "__main__":
