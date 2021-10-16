@@ -1,3 +1,4 @@
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -25,6 +26,8 @@ def calculate_fis(mf, fuzInputs, realInputs):
 
 def evaluate(input, l2):
 
+    normalized_input = normalize(input)  
+
     irr, flow, tamb, tin, tout = [input[key] for key in KEYS]
     realInputs = [abs(tout - tin), irr, flow]
 
@@ -45,6 +48,23 @@ def evaluate(input, l2):
 
     return {KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None}
     # l2.put({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
+
+
+def normalize(input, path="./norm_scales"):
+    
+    with open(f'{path}/Min-Max scaler.json', 'r') as f:
+        data = json.load(f)
+    
+    results = []
+    for key in KEYS:
+        minm, maxm = data[key]["MIN"], data[key]["MAX"]
+        results.append((input[key]-minm)/(maxm - minm))
+
+    #TODO Read TH_JUMP
+    min_tjump, max_tjump = data["TH_JUMP"]["MIN"], data["TH_JUMP"]["MAX"]
+    results.append(min_tjump, max_tjump)
+
+    return results
 
 
 def test_evaluation():
