@@ -27,24 +27,22 @@ def calculate_fis(mf, fuzInputs, realInputs):
 def evaluate(input, l2):
 
     normalized_input = normalize(input)  
+    irr, flow, tamb, tin, tout, tjump = normalized_input
 
-    irr, flow, tamb, tin, tout = [input[key] for key in KEYS]
-    realInputs = [abs(tout - tin), irr, flow]
+    # TODO PCAs
 
     ## Evaluate Irradiance
     inputs1, output1, rules1 = irr_normal_fis()
     inputs2, output2, rules2 = irr_pos_fis()
     inputs3, output3, rules3 = irr_neg_fis()
     
-    print(rules1, inputs1, rules2, inputs2, rules3, inputs3)
-    print(realInputs)
-    F_irr = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, realInputs)
+    F_irr = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [tamb, irr, tjump])
 
     ## Evaluate Flow
     inputs1, output1, rules1 = flow_normal_fis()
     inputs2, output2, rules2 = flow_pos_fis()
     inputs3, output3, rules3 = flow_neg_fis()
-    F_flow = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, realInputs)
+    F_flow = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [tout, tjump, flow])
 
     return {KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None}
     # l2.put({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
@@ -60,9 +58,9 @@ def normalize(input, path="./norm_scales"):
         minm, maxm = data[key]["MIN"], data[key]["MAX"]
         results.append((input[key]-minm)/(maxm - minm))
 
-    #TODO Read TH_JUMP
+    Tjump = abs(input['TOUT']-input['TIN'])
     min_tjump, max_tjump = data["TH_JUMP"]["MIN"], data["TH_JUMP"]["MAX"]
-    results.append(min_tjump, max_tjump)
+    results.append((Tjump - min_tjump) / (max_tjump - min_tjump))
 
     return results
 

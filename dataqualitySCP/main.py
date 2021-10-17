@@ -99,8 +99,8 @@ def parse_input():
         assert os.path.isdir(outputs_path), \
             f'[ERROR]: Directory not found at "{outputs_path}"'
 
-        #TODO
-        makepredictions_dataset(data_set_root, outputs_path)
+        return "dataset", [data_set_root, outputs_path]
+
     else:
         try:
             irr = float(args.irr)
@@ -115,23 +115,8 @@ def parse_input():
         assert irr and flow and tamb and tin and tout, \
             f'"--irr", "--flow", "--tamb", "--tin" and "--tout" arguments must be specified as float values.'
 
-        #TODO
-        makepredictions_simple(irr, flow, tamb, tin, tout)
+        return "simple", [irr, flow, tamb, tin, tout]
 
-
-def makepredictions_dataset(dataset_root, outputs_path):
-    print("Arguments:")
-    print("dataset_root", dataset_root)
-    print("outputs_path", outputs_path)
-
-
-def makepredictions_simple(irr, flow, tamb, tin, tout):
-    print("Arguments:")
-    print("irr", irr)
-    print("flow", flow)
-    print("tamb", tamb)
-    print("tin", tin)
-    print("tout", tout)
 
 
 if __name__ == "__main__":

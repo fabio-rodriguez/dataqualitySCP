@@ -13,6 +13,9 @@ KEY_TIN = "TIN"
 KEY_TOUT = "TOUT"
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 KEYS = [KEY_IRR, KEY_FLOW, KEY_TAMB, KEY_TIN, KEY_TOUT]
 PREDICTION_KEYS = [KEY_IRR, KEY_FLOW, KEY_TIN, KEY_TOUT]
 EVALUATION_KEYS = [KEY_IRR, KEY_FLOW, KEY_TIN, KEY_TOUT]
