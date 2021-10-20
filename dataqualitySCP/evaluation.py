@@ -4,17 +4,20 @@ import numpy as np
 
 from constants import *
 
+with open("./models/detection/principal_components.json") as file:
+    PRINCIPAL_COMPONENTS = json.load(file)
+
 
 #----------------------------------------------------------------------------------------------------------------------------
 # EVALUATE  fis		
 #----------------------------------------------------------------------------------------------------------------------------
-def evaluate_sensor(mf_normal, fuzInputs_normal, mf_pos, fuzInputs_pos, mf_neg, fuzInputs_neg, realInputs):
+def evaluate_sensor(mf_normal, fuzInputs_normal, mf_pos, fuzInputs_pos, mf_neg, fuzInputs_neg, realInputs, output):
 
     result_1 = calculate_fis(mf_normal, fuzInputs_normal, realInputs)    
     result_2 = calculate_fis(mf_pos, fuzInputs_pos, realInputs)
     result_3 = calculate_fis(mf_neg, fuzInputs_neg, realInputs)
     
-    return min(result_1, result_2, result_3) == result_1
+    return min(result_1 - output, result_2 - output, result_3 - output) == result_1 - output
 
 
 #----------------------------------------------------------------------------------------------------------------------------
@@ -29,20 +32,21 @@ def evaluate(input, l2):
     normalized_input = normalize(input)  
     irr, flow, tamb, tin, tout, tjump = normalized_input
 
-    # TODO PCAs
-
     ## Evaluate Irradiance
     inputs1, output1, rules1 = irr_normal_fis()
     inputs2, output2, rules2 = irr_pos_fis()
     inputs3, output3, rules3 = irr_neg_fis()
-    
-    F_irr = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [tamb, irr, tjump])
+
+    xtotal, xnormal, xpos, xneg = apply_PCA(KEY_IRR, np.array([tamb, irr, tjump]))
+    F_irr = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
 
     ## Evaluate Flow
     inputs1, output1, rules1 = flow_normal_fis()
     inputs2, output2, rules2 = flow_pos_fis()
     inputs3, output3, rules3 = flow_neg_fis()
-    F_flow = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [tout, tjump, flow])
+    
+    xtotal, xnormal, xpos, xneg = apply_PCA(KEY_FLOW, np.array([tout, tjump, flow]))
+    F_flow = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
 
     return {KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None}
     # l2.put({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
@@ -115,7 +119,21 @@ def test_evaluation():
     plt.show()
 
 
-if __name__ == "__main__":
+def apply_PCA(key, input):
 
+    total = np.array(PRINCIPAL_COMPONENTS[key]["total"])
+    normal = np.array(PRINCIPAL_COMPONENTS[key]["normal"])
+    negative = np.array(PRINCIPAL_COMPONENTS[key]["negative"])
+    positive = np.array(PRINCIPAL_COMPONENTS[key]["positive"])
+
+    xtotal = np.dot(input, total)[0] 
+    xnormal = np.dot(input, normal)[0]
+    xpos = np.dot(input, positive)[0]
+    xneg = np.dot(input, negative)[0]
+
+    return xtotal, xnormal, xpos, xneg
+
+
+if __name__ == "__main__":
 
     test_evaluation()
