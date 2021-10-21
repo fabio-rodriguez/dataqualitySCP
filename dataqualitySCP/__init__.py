@@ -5,10 +5,10 @@ import time
 
 from multiprocessing import Process, Queue
 
-from constants import *
-from evaluation import evaluate
-from main import parse_input
-from prediction import predict
+from .constants import *
+from .evaluation import evaluate
+from .main import parse_input
+from .prediction import predict
 
 
 def __exe__(input, verbose=False):

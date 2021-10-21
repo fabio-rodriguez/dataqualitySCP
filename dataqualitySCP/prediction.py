@@ -5,7 +5,7 @@ import numpy as np
 from math import *
 from sklearn import preprocessing
 
-from constants import *
+from .constants import *
 
 
 def path_to_prediction_models(path="/models/prediction"):

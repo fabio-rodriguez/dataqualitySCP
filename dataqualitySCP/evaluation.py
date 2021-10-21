@@ -2,9 +2,9 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-from constants import *
+from .constants import *
 
-with open("./models/detection/principal_components.json") as file:
+with open(f"{ROOT_DIR}/models/detection/principal_components.json") as file:
     PRINCIPAL_COMPONENTS = json.load(file)
 
 
