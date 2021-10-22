@@ -96,10 +96,13 @@ def parse_input():
     simple_input_prediction = args.simple_input_prediction
     
     assert int(data_set_prediction) + int(simple_input_prediction) + int(default_validation) == 1, \
-        "[ERROR] An option --data-set-prediction or --simple-input-prediction must be specified"
+        "[ERROR] An option --default-validation, --data-set-prediction or --simple-input-prediction must be specified"
 
     if default_validation:
         outputs_path = args.outputs_path
+
+        assert outputs_path != None, \
+            f'[ERROR]: "--outputs-path" argument must be specified.'
 
         assert os.path.isdir(outputs_path), \
             f'[ERROR]: Directory not found at "{outputs_path}"'
