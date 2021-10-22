@@ -114,16 +114,13 @@ def test_evaluation():
         realInputs = [n1[i], n2[i], n3[i]]
         ii_1.append(i)
         result_1 = calculate_fis(rules1, inputs1, realInputs)  
-        # result_1 = mf_1.calculate({input1_1: n1[i], input2_1: n2[i], input3_1: n3[i]})
         nn_1= list(result_1.values())
         jj_1.append(nn_1)
 
-        # result_2 = mf_2.calculate({input1_2: n1[i], input2_2: n2[i], input3_2: n3[i]})
         result_2 = calculate_fis(rules2, inputs2, realInputs)  
         nn_2= list(result_2.values())
         jj_2.append(nn_2)
 
-        # result_3 = mf_3.calculate({input1_3: n1[i], input2_3: n2[i], input3_3: n3[i]})
         result_3 = calculate_fis(rules3, inputs3, realInputs)  
         nn_3= list(result_3.values())
         jj_3.append(nn_3)
@@ -136,6 +133,7 @@ def test_evaluation():
     plt.ylabel( "Real and Estimated prototype" )
     plt.xlabel( "Samples" )
     plt.show()
+
 
 
 if __name__ == "__main__":

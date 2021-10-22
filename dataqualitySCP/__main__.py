@@ -2,7 +2,7 @@ import argparse
 import os
 import time
 
-from .__init__ import __exe__, KEYS, __exe_dataframe__
+from .__init__ import __exe__, KEYS, __exe_dataframe__, default_validation
 
 
 def parse_input():
@@ -10,6 +10,14 @@ def parse_input():
     parser = argparse.ArgumentParser(
             description='Evaluation and Offset prediction of the Solar Cooling Plant (SCP) sensors'
     )
+
+    parser.add_argument(
+            '--default-validation',
+            default=0,
+            dest='default_validation',
+            help=f'Validates default data set.',
+            action="store_true"
+        )
 
     parser.add_argument(
             '--data-set-prediction',
@@ -83,13 +91,22 @@ def parse_input():
 
     args = parser.parse_args()
 
+    default_validation = args.default_validation
     data_set_prediction = args.data_set_prediction
     simple_input_prediction = args.simple_input_prediction
     
-    assert int(data_set_prediction) + int(simple_input_prediction) == 1, \
+    assert int(data_set_prediction) + int(simple_input_prediction) + int(default_validation) == 1, \
         "[ERROR] An option --data-set-prediction or --simple-input-prediction must be specified"
 
-    if data_set_prediction:
+    if default_validation:
+        outputs_path = args.outputs_path
+
+        assert os.path.isdir(outputs_path), \
+            f'[ERROR]: Directory not found at "{outputs_path}"'
+
+        return "default", outputs_path
+
+    elif data_set_prediction:
         data_set_root = args.data_set_root
         outputs_path = args.outputs_path
 
@@ -123,17 +140,20 @@ def parse_input():
 
 if __name__ == "__main__":
 
-    option, values = parse_input()
+    option, args = parse_input()
 
     t0 = time.time()
 
-    if option == "simple":
-        input = {k: v for k, v in zip(KEYS, values)}
+    if option == "default":
+        default_validation(args)    
+    
+    elif option == "simple":
+        input = {k: v for k, v in zip(KEYS, args)}
         __exe__(input, verbose=True)    
     
-    elif option == "dataset": 
-        dataset_root, outputs_path = values
+    else: 
+        dataset_root, outputs_path = args
         __exe_dataframe__(dataset_root, outputs_path)
 
-    tf = round((time.time()-t0)/60, 2)
-    print(f"**Computing Time: {tf} minutes.")
+    tf = time.time()-t0
+    print(f"**Computing Time: {tf} seconds.")

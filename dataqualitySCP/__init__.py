@@ -8,10 +8,21 @@ from .constants import *
 from .evaluation import evaluate
 from .prediction import predict
 
-def process_input(irr, flow, tamb, tin, tout, verbose=False):
 
+def process_input(irr, flow, tamb, tin, tout, verbose=False):
     input = {KEY_IRR: irr, KEY_FLOW: flow, KEY_TAMB: tamb, KEY_TIN: tin, KEY_TOUT: tout}
     return __exe__(input, verbose)
+
+
+## TODO
+def process_dataset(path_to_dataset, path_to_output_folder, verbose=False):
+    pass
+
+
+## TODO
+def default_validation(path_to_output_folder):
+    print("Hello")
+    pass
 
 
 def __exe__(input, verbose=False):
