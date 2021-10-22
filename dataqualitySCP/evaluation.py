@@ -4,20 +4,24 @@ import numpy as np
 
 from .constants import *
 
-with open(f"{ROOT_DIR}/models/detection/principal_components.json") as file:
+with open(f"{ROOT_DIR}/{DETECTION_MODELS_REL_PATH}/principal_components.json") as file:
     PRINCIPAL_COMPONENTS = json.load(file)
 
 
 #----------------------------------------------------------------------------------------------------------------------------
 # EVALUATE  fis		
 #----------------------------------------------------------------------------------------------------------------------------
-def evaluate_sensor(mf_normal, fuzInputs_normal, mf_pos, fuzInputs_pos, mf_neg, fuzInputs_neg, realInputs, output):
+def is_faulty_sensor(mf_normal, fuzInputs_normal, mf_pos, fuzInputs_pos, mf_neg, fuzInputs_neg, realInputs, output):
 
     result_1 = calculate_fis(mf_normal, fuzInputs_normal, realInputs)    
     result_2 = calculate_fis(mf_pos, fuzInputs_pos, realInputs)
     result_3 = calculate_fis(mf_neg, fuzInputs_neg, realInputs)
+
+    prob1= abs(list(result_1.values())[0] - output)
+    prob2= abs(list(result_2.values())[0] - output)
+    prob3= abs(list(result_3.values())[0] - output)
     
-    return min(result_1 - output, result_2 - output, result_3 - output) == result_1 - output
+    return not min(prob1, prob2, prob3) == prob1
 
 
 #----------------------------------------------------------------------------------------------------------------------------
@@ -38,7 +42,8 @@ def evaluate(input, l2):
     inputs3, output3, rules3 = irr_neg_fis()
 
     xtotal, xnormal, xpos, xneg = apply_PCA(KEY_IRR, np.array([tamb, irr, tjump]))
-    F_irr = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+    
+    F_irr = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
 
     ## Evaluate Flow
     inputs1, output1, rules1 = flow_normal_fis()
@@ -46,15 +51,15 @@ def evaluate(input, l2):
     inputs3, output3, rules3 = flow_neg_fis()
     
     xtotal, xnormal, xpos, xneg = apply_PCA(KEY_FLOW, np.array([tout, tjump, flow]))
-    F_flow = evaluate_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+    F_flow = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
 
     return {KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None}
     # l2.put({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
 
 
-def normalize(input, path="./norm_scales"):
+def normalize(input):
     
-    with open(f'{path}/Min-Max scaler.json', 'r') as f:
+    with open(f'{ROOT_DIR}/{SCALERS_REL_PATH}/Min-Max scaler.json', 'r') as f:
         data = json.load(f)
     
     results = []
@@ -69,6 +74,21 @@ def normalize(input, path="./norm_scales"):
     return results
 
 
+def apply_PCA(key, input):
+
+    total = np.array(PRINCIPAL_COMPONENTS[key]["total"])
+    normal = np.array(PRINCIPAL_COMPONENTS[key]["normal"])
+    negative = np.array(PRINCIPAL_COMPONENTS[key]["negative"])
+    positive = np.array(PRINCIPAL_COMPONENTS[key]["positive"])
+
+    xtotal = np.dot(input, total)
+    xnormal = np.dot(input, normal)
+    xpos = np.dot(input, positive)
+    xneg = np.dot(input, negative)
+
+    return xtotal, xnormal, xpos, xneg
+
+
 def test_evaluation():
 
     ii_1 = [] 
@@ -81,7 +101,6 @@ def test_evaluation():
     inputs3, output3, rules3 = flow_neg_fis()
 
     ts = np.loadtxt('Q_data_eval_Fneg.txt',usecols=[0,1,2,3,4,5,6])
-    #pprint(ts)
     n1 = ts[:,0:1]  # input1
     n2 = ts[:,1:2]  # input2
     n3 = ts[:,2:3]  # input3
@@ -117,21 +136,6 @@ def test_evaluation():
     plt.ylabel( "Real and Estimated prototype" )
     plt.xlabel( "Samples" )
     plt.show()
-
-
-def apply_PCA(key, input):
-
-    total = np.array(PRINCIPAL_COMPONENTS[key]["total"])
-    normal = np.array(PRINCIPAL_COMPONENTS[key]["normal"])
-    negative = np.array(PRINCIPAL_COMPONENTS[key]["negative"])
-    positive = np.array(PRINCIPAL_COMPONENTS[key]["positive"])
-
-    xtotal = np.dot(input, total)[0] 
-    xnormal = np.dot(input, normal)[0]
-    xpos = np.dot(input, positive)[0]
-    xneg = np.dot(input, negative)[0]
-
-    return xtotal, xnormal, xpos, xneg
 
 
 if __name__ == "__main__":

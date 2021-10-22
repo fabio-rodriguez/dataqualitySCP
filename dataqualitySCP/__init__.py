@@ -1,14 +1,17 @@
 import numpy as np
 import pandas as pd
 import scipy.io
-import time
 
 from multiprocessing import Process, Queue
 
 from .constants import *
 from .evaluation import evaluate
-from .main import parse_input
 from .prediction import predict
+
+def process_input(irr, flow, tamb, tin, tout, verbose=False):
+
+    input = {KEY_IRR: irr, KEY_FLOW: flow, KEY_TAMB: tamb, KEY_TIN: tin, KEY_TOUT: tout}
+    return __exe__(input, verbose)
 
 
 def __exe__(input, verbose=False):
@@ -104,18 +107,4 @@ def print_errors(eval_error, pred_error):
 
 
 if __name__ == '__main__':
-    
-    option, values = parse_input()
-
-    t0 = time.time()
-
-    if option == "simple":
-        input = {k: v for k, v in zip(KEYS, values)}
-        __exe__(input, verbose=True)    
-    
-    elif option == "dataset": 
-        dataset_root, outputs_path = values
-        __exe_dataframe__(dataset_root, outputs_path)
-
-    tf = round((time.time()-t0)/60, 2)
-    print(f"**Computing Time: {tf} minutes.")
+    pass

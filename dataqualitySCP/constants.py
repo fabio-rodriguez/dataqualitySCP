@@ -5,15 +5,19 @@ from fuzzy_logic.sugeno_fs import SugenoFuzzySystem
 from fuzzy_logic.terms import Term
 from fuzzy_logic.variables import FuzzyVariable, SugenoVariable, LinearSugenoFunction
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+DETECTION_MODELS_REL_PATH = "models/detection"
+PREDICTION_MODELS_REL_PATH = "models/prediction"
+SCALERS_REL_PATH = "norm_scales"
+OUTPUTS_REL_PATH = "outputs"
 
 KEY_IRR = "IRR"
 KEY_FLOW = "FLOW"
 KEY_TAMB = "TAMB"
 KEY_TIN = "TIN"
 KEY_TOUT = "TOUT"
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 KEYS = [KEY_IRR, KEY_FLOW, KEY_TAMB, KEY_TIN, KEY_TOUT]

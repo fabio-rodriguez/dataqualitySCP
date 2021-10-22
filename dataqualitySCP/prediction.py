@@ -8,7 +8,7 @@ from sklearn import preprocessing
 from .constants import *
 
 
-def path_to_prediction_models(path="/models/prediction"):
+def path_to_prediction_models():
     '''Get the models path for predicting '''
 
     irr = "irradiance_model.h5"
@@ -19,12 +19,12 @@ def path_to_prediction_models(path="/models/prediction"):
 
     models = [irr, flow, tamb, tin, tout]
     
-    return {k: f'{ROOT_DIR}/{path}/{m}' for k, m in zip(PREDICTION_KEYS, models)}
+    return {k: f'{ROOT_DIR}/{PREDICTION_MODELS_REL_PATH}/{m}' for k, m in zip(PREDICTION_KEYS, models)}
 
 
-def get_predictions_scaler(path="./norm_scales"):
+def get_predictions_scaler():
     '''Get the parameters of the scaler (mean and std) for predicting '''
-    return joblib.load(f'{ROOT_DIR}/{path}/std_scaler.bin')
+    return joblib.load(f'{ROOT_DIR}/{SCALERS_REL_PATH}/std_scaler.bin')
 
 
 def predict(input, l1):

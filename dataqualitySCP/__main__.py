@@ -1,5 +1,8 @@
 import argparse
 import os
+import time
+
+from .__init__ import __exe__, KEYS, __exe_dataframe__
 
 
 def parse_input():
@@ -118,7 +121,19 @@ def parse_input():
         return "simple", [irr, flow, tamb, tin, tout]
 
 
-
 if __name__ == "__main__":
 
-    parse_input()
+    option, values = parse_input()
+
+    t0 = time.time()
+
+    if option == "simple":
+        input = {k: v for k, v in zip(KEYS, values)}
+        __exe__(input, verbose=True)    
+    
+    elif option == "dataset": 
+        dataset_root, outputs_path = values
+        __exe_dataframe__(dataset_root, outputs_path)
+
+    tf = round((time.time()-t0)/60, 2)
+    print(f"**Computing Time: {tf} minutes.")
