@@ -151,7 +151,7 @@ if __name__ == "__main__":
         default_validation(args)    
     
     elif option == "simple":
-        input = {k: v for k, v in zip(KEYS, args)}
+        input = {k: [v] for k, v in zip(KEYS, args)}
         __exe__(input, verbose=True)    
     
     else: 

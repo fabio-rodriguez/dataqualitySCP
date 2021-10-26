@@ -1,58 +1,39 @@
-import joblib 
-import keras
 import numpy as np
+import statistics
 
 from math import *
-from sklearn import preprocessing
 
 from .constants import *
-
-
-def path_to_prediction_models():
-    '''Get the models path for predicting '''
-
-    irr = "irradiance_model.h5"
-    flow = "flow_model.h5"
-    tamb = "tamb_model.h5"
-    tin = "tin_model.h5"
-    tout = "tout_model.h5"
-
-    models = [irr, flow, tamb, tin, tout]
-    
-    return {k: f'{ROOT_DIR}/{PREDICTION_MODELS_REL_PATH}/{m}' for k, m in zip(PREDICTION_KEYS, models)}
-
-
-def get_predictions_scaler():
-    '''Get the parameters of the scaler (mean and std) for predicting '''
-    return joblib.load(f'{ROOT_DIR}/{SCALERS_REL_PATH}/std_scaler.bin')
 
 
 def predict(input, l1):
     '''Predict the correct sensor values from input variables'''
 
-    models = path_to_prediction_models()
-    scaler = get_predictions_scaler()
+    scaler = PREDICTION_SCALER
     
-    Xs = [input[k] for k in KEYS]
-    Xs_norm = scaler.transform([Xs])
+    Xs = np.transpose([input[k] for k in KEYS])
+    Xs_norm = scaler.transform(Xs)
     
     predictions = {}
     errors = {}
 
     for i, k in enumerate(KEYS):
-        if k not in models.keys():
+        if k not in PREDICTION_MODELS.keys():
             continue
 
-        Xi = Xs_norm[:]
-        Xi = np.delete(Xi, [i], 1)
-        model = keras.models.load_model(models[k])
+        Xi = np.delete(Xs_norm, [i], 1)
+        y = Xs[:, i]
 
+        model = PREDICTION_MODELS[k]
         y_pred = model.predict(Xi)
         y_pred = [yi[0]*sqrt(scaler.var_[i])+scaler.mean_[i] for yi in y_pred]
+
         
         predictions[k] = y_pred
-        errors[k] = abs(y_pred[0]-Xs[i])
+        e = np.abs(np.array(y)-np.array(y_pred))
+        errors[k] = {'MEAN_ERROR': sum(e)/len(e), 'STD_ERROR': statistics.pstdev(e)}
 
+    # return predictions, errors
     l1.put((predictions, errors))
 
 

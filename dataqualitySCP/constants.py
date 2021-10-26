@@ -1,4 +1,6 @@
+import joblib
 import json
+import keras
 import os
 
 from fuzzy_logic.mf import NormalMF
@@ -12,6 +14,7 @@ DETECTION_MODELS_REL_PATH = "models/detection"
 PREDICTION_MODELS_REL_PATH = "models/prediction"
 SCALERS_REL_PATH = "norm_scales"
 OUTPUTS_REL_PATH = "outputs"
+PATH_TO_DATASETS = "data"
 
 KEY_IRR = "IRR"
 KEY_FLOW = "FLOW"
@@ -19,13 +22,21 @@ KEY_TAMB = "TAMB"
 KEY_TIN = "TIN"
 KEY_TOUT = "TOUT"
 
-
 KEYS = [KEY_IRR, KEY_FLOW, KEY_TAMB, KEY_TIN, KEY_TOUT]
 PREDICTION_KEYS = [KEY_IRR, KEY_FLOW, KEY_TIN, KEY_TOUT]
-EVALUATION_KEYS = [KEY_IRR, KEY_FLOW, KEY_TIN, KEY_TOUT]
+EVALUATION_KEYS = [KEY_IRR, KEY_FLOW]
 
 with open(f"{ROOT_DIR}/{DETECTION_MODELS_REL_PATH}/principal_components.json") as file:
     PRINCIPAL_COMPONENTS = json.load(file)
+
+with open(f'{ROOT_DIR}/{SCALERS_REL_PATH}/Min-Max scaler.json', 'r') as f:
+    EVALUATION_SCALER = json.load(f)
+
+
+PREDICTION_MODELS_NAME = ["irradiance_model.h5", "flow_model.h5", "tamb_model.h5", "tin_model.h5", "tout_model.h5"]
+PREDICTION_MODELS = { key: keras.models.load_model(f'{ROOT_DIR}/{PREDICTION_MODELS_REL_PATH}/{name}') for key, name in zip(KEYS, PREDICTION_MODELS_NAME) } 
+
+PREDICTION_SCALER = joblib.load(f'{ROOT_DIR}/{SCALERS_REL_PATH}/std_scaler.bin')
 
 #----------------------------------------------------------------------------------------------------------------------------
 # FIS NORMAL Flow
@@ -296,3 +307,18 @@ def irr_neg_fis():
     mf.rules.append(mf.parse_rule('if (input1 is mf3) and (input2 is mf3) and (input3 is mf3) then (output is mf3)'))
 
     return [input1, input2, input3], output, mf 
+
+
+KEY_ANFIS = {
+    KEY_IRR: {
+        "normal" : irr_normal_fis(),
+        "positive" : irr_pos_fis(),
+        "normal" : irr_normal_fis(),
+    },
+    KEY_FLOW: {
+        "normal" : flow_normal_fis(),
+        "positive" : flow_pos_fis(),
+        "normal" : flow_normal_fis(),
+    }
+}
+

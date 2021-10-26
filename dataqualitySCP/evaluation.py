@@ -2,7 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-from constants import *
+from .constants import *
 
 #----------------------------------------------------------------------------------------------------------------------------
 # EVALUATE  fis		
@@ -29,33 +29,39 @@ def calculate_fis(mf, fuzInputs, realInputs):
 
 def evaluate(input, l2):
     
-    ## Evaluate Irradiance
-    inputs1, output1, rules1 = irr_normal_fis()
-    inputs2, output2, rules2 = irr_pos_fis()
-    inputs3, output3, rules3 = irr_neg_fis()
-
     normalized_input = normalize(input)  
-    irr, flow, tamb, tin, tout, tjump = normalized_input
-    xtotal, xnormal, xpos, xneg = apply_PCA(KEY_IRR, np.array([tamb, irr, tjump]))
-    
-    F_irr = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+    Xs = np.transpose(normalized_input)
+    results = []
 
-    ## Evaluate Flow
-    inputs1, output1, rules1 = flow_normal_fis()
-    inputs2, output2, rules2 = flow_pos_fis()
-    inputs3, output3, rules3 = flow_neg_fis()
-    
-    xtotal, xnormal, xpos, xneg = apply_PCA(KEY_FLOW, np.array([tout, tjump, flow]))
-    F_flow = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+    for _, row in Xs.iterrows():
+        irr, flow, tamb, tin, tout, tjump = row
 
-    return {KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None}
-    # l2.put({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
+        ## Evaluate Irradiance
+        inputs1, output1, rules1 = irr_normal_fis()
+        inputs2, output2, rules2 = irr_pos_fis()
+        inputs3, output3, rules3 = irr_neg_fis()
+
+        xtotal, xnormal, xpos, xneg = apply_PCA(KEY_IRR, np.array([tamb, irr, tjump]))
+        
+        F_irr = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+
+        ## Evaluate Flow
+        inputs1, output1, rules1 = flow_normal_fis()
+        inputs2, output2, rules2 = flow_pos_fis()
+        inputs3, output3, rules3 = flow_neg_fis()
+        
+        xtotal, xnormal, xpos, xneg = apply_PCA(KEY_FLOW, np.array([tout, tjump, flow]))
+        F_flow = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+
+        results.append({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
+
+    # return {KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None}
+    l2.put(results)
 
 
 def normalize(input):
     
-    with open(f'{ROOT_DIR}/{SCALERS_REL_PATH}/Min-Max scaler.json', 'r') as f:
-        data = json.load(f)
+    data = EVALUATION_SCALER
     
     results = []
     for key in KEYS:
@@ -132,36 +138,5 @@ def test_evaluation():
 
 if __name__ == "__main__":
 
-    input = {KEY_IRR: 0, KEY_FLOW: 12.1342333333333, KEY_TAMB: 0, KEY_TIN: 84.06999999999998, KEY_TOUT: 86.5533333333333}
-
-    irr, flow, tamb, tin, tout, tjump = normalize(input)
-    print("normalized", [tout, tjump, flow])
-
-    total    = np.array(PRINCIPAL_COMPONENTS[KEY_FLOW]["total"])
-    normal   = np.array(PRINCIPAL_COMPONENTS[KEY_FLOW]["normal"])
-    negative = np.array(PRINCIPAL_COMPONENTS[KEY_FLOW]["negative"])
-    positive = np.array(PRINCIPAL_COMPONENTS[KEY_FLOW]["positive"])
-
-    result = apply_PCA(KEY_FLOW, np.array([tout, tjump, flow]))
-    print("PCA result", result)
-    
-    xtotal, xnormal, xpos, xneg = result
-    inputs_normal, output_normal, rules_normal = flow_normal_fis()
-    inputs_pos, output_pos, rules_pos = flow_pos_fis()
-    inputs_neg, output_neg, rules_neg = flow_neg_fis()
-
-    result_1 = calculate_fis(rules_normal, inputs_normal, [xnormal, xpos, xneg])    
-    result_2 = calculate_fis(rules_pos, inputs_pos, [xnormal, xpos, xneg])    
-    result_3 = calculate_fis(rules_neg, inputs_neg, [xnormal, xpos, xneg])    
-
-    result_1 = list(result_1.values())[0]
-    result_2 = list(result_2.values())[0]
-    result_3 = list(result_3.values())[0]
-
-    print("fis_result", result_1, result_2, result_3)
-
-    F_flow = is_faulty_sensor(rules_normal, inputs_normal, rules_pos, inputs_pos, rules_neg, inputs_neg, [xnormal, xpos, xneg], xtotal)
-    print("eval result", F_flow)
-
-    # test_evaluation()
+    test_evaluation()
 
