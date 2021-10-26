@@ -2,24 +2,20 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-from .constants import *
-
-with open(f"{ROOT_DIR}/{DETECTION_MODELS_REL_PATH}/principal_components.json") as file:
-    PRINCIPAL_COMPONENTS = json.load(file)
-
+from constants import *
 
 #----------------------------------------------------------------------------------------------------------------------------
 # EVALUATE  fis		
 #----------------------------------------------------------------------------------------------------------------------------
-def is_faulty_sensor(mf_normal, fuzInputs_normal, mf_pos, fuzInputs_pos, mf_neg, fuzInputs_neg, realInputs, output):
+def is_faulty_sensor(mf_normal, fuzInputs_normal, mf_pos, fuzInputs_pos, mf_neg, fuzInputs_neg, realInputs, totalPCA):
 
     result_1 = calculate_fis(mf_normal, fuzInputs_normal, realInputs)    
     result_2 = calculate_fis(mf_pos, fuzInputs_pos, realInputs)
     result_3 = calculate_fis(mf_neg, fuzInputs_neg, realInputs)
 
-    prob1= abs(list(result_1.values())[0] - output)
-    prob2= abs(list(result_2.values())[0] - output)
-    prob3= abs(list(result_3.values())[0] - output)
+    prob1= abs(list(result_1.values())[0] - totalPCA)
+    prob2= abs(list(result_2.values())[0] - totalPCA)
+    prob3= abs(list(result_3.values())[0] - totalPCA)
     
     return not min(prob1, prob2, prob3) == prob1
 
@@ -32,15 +28,14 @@ def calculate_fis(mf, fuzInputs, realInputs):
 
 
 def evaluate(input, l2):
-
-    normalized_input = normalize(input)  
-    irr, flow, tamb, tin, tout, tjump = normalized_input
-
+    
     ## Evaluate Irradiance
     inputs1, output1, rules1 = irr_normal_fis()
     inputs2, output2, rules2 = irr_pos_fis()
     inputs3, output3, rules3 = irr_neg_fis()
 
+    normalized_input = normalize(input)  
+    irr, flow, tamb, tin, tout, tjump = normalized_input
     xtotal, xnormal, xpos, xneg = apply_PCA(KEY_IRR, np.array([tamb, irr, tjump]))
     
     F_irr = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
@@ -125,17 +120,48 @@ def test_evaluation():
         nn_3= list(result_3.values())
         jj_3.append(nn_3)
 
-    plt.plot(ii_1, n4)
-    plt.plot(ii_1, np.reshape(np.array(jj_1), (len(jj_1),)))
-    plt.plot(ii_1, np.reshape(np.array(jj_2), (len(jj_2),)))
-    plt.plot(ii_1, np.reshape(np.array(jj_3), (len(jj_3),)))
+    plt.plot(ii_1, n4, 'g')
+    plt.plot(ii_1, np.reshape(np.array(jj_1), (len(jj_1),)), 'b')
+    plt.plot(ii_1, np.reshape(np.array(jj_2), (len(jj_2),)), 'r')
+    plt.plot(ii_1, np.reshape(np.array(jj_3), (len(jj_3),)), 'y')
     plt.legend(loc = 'upper right')
     plt.ylabel( "Real and Estimated prototype" )
     plt.xlabel( "Samples" )
     plt.show()
 
 
-
 if __name__ == "__main__":
 
-    test_evaluation()
+    input = {KEY_IRR: 0, KEY_FLOW: 12.1342333333333, KEY_TAMB: 0, KEY_TIN: 84.06999999999998, KEY_TOUT: 86.5533333333333}
+
+    irr, flow, tamb, tin, tout, tjump = normalize(input)
+    print("normalized", [tout, tjump, flow])
+
+    total    = np.array(PRINCIPAL_COMPONENTS[KEY_FLOW]["total"])
+    normal   = np.array(PRINCIPAL_COMPONENTS[KEY_FLOW]["normal"])
+    negative = np.array(PRINCIPAL_COMPONENTS[KEY_FLOW]["negative"])
+    positive = np.array(PRINCIPAL_COMPONENTS[KEY_FLOW]["positive"])
+
+    result = apply_PCA(KEY_FLOW, np.array([tout, tjump, flow]))
+    print("PCA result", result)
+    
+    xtotal, xnormal, xpos, xneg = result
+    inputs_normal, output_normal, rules_normal = flow_normal_fis()
+    inputs_pos, output_pos, rules_pos = flow_pos_fis()
+    inputs_neg, output_neg, rules_neg = flow_neg_fis()
+
+    result_1 = calculate_fis(rules_normal, inputs_normal, [xnormal, xpos, xneg])    
+    result_2 = calculate_fis(rules_pos, inputs_pos, [xnormal, xpos, xneg])    
+    result_3 = calculate_fis(rules_neg, inputs_neg, [xnormal, xpos, xneg])    
+
+    result_1 = list(result_1.values())[0]
+    result_2 = list(result_2.values())[0]
+    result_3 = list(result_3.values())[0]
+
+    print("fis_result", result_1, result_2, result_3)
+
+    F_flow = is_faulty_sensor(rules_normal, inputs_normal, rules_pos, inputs_pos, rules_neg, inputs_neg, [xnormal, xpos, xneg], xtotal)
+    print("eval result", F_flow)
+
+    # test_evaluation()
+
