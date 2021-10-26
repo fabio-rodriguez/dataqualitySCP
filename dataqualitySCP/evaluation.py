@@ -33,7 +33,7 @@ def evaluate(input, l2):
     Xs = np.transpose(normalized_input)
     results = []
 
-    for _, row in Xs.iterrows():
+    for row in Xs:
         irr, flow, tamb, tin, tout, tjump = row
 
         ## Evaluate Irradiance
@@ -55,7 +55,6 @@ def evaluate(input, l2):
 
         results.append({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
 
-    # return {KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None}
     l2.put(results)
 
 

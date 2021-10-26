@@ -2,7 +2,7 @@ import argparse
 import os
 import time
 
-from .__init__ import __exe__, KEYS, __exe_dataframe__, default_validation
+from .__init__ import KEYS, __exe__, default_validation, process_dataset
 
 
 def parse_input():
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     
     else: 
         dataset_root, outputs_path = args
-        __exe_dataframe__(dataset_root, outputs_path)
+        process_dataset(dataset_root, outputs_path)
 
     tf = time.time()-t0
     print(f"**Computing Time: {tf} seconds.")

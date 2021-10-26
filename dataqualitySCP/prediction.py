@@ -15,26 +15,20 @@ def predict(input, l1):
     Xs_norm = scaler.transform(Xs)
     
     predictions = {}
-    errors = {}
 
     for i, k in enumerate(KEYS):
         if k not in PREDICTION_MODELS.keys():
             continue
 
         Xi = np.delete(Xs_norm, [i], 1)
-        y = Xs[:, i]
 
         model = PREDICTION_MODELS[k]
         y_pred = model.predict(Xi)
         y_pred = [yi[0]*sqrt(scaler.var_[i])+scaler.mean_[i] for yi in y_pred]
 
-        
         predictions[k] = y_pred
-        e = np.abs(np.array(y)-np.array(y_pred))
-        errors[k] = {'MEAN_ERROR': sum(e)/len(e), 'STD_ERROR': statistics.pstdev(e)}
 
-    # return predictions, errors
-    l1.put((predictions, errors))
+    l1.put(predictions)
 
 
 def print_prediction_output(predictions, errors):
