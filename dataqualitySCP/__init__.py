@@ -44,18 +44,24 @@ def process_dataset(path_to_output_folder, path_to_dataset=f'{ROOT_DIR}/{PATH_TO
     output_predictions(df, eval_errors, full_predictions, measures, path_to_output_folder)
 
 
-def __exe__(input):
+def __exe__(inputs, verbose=False):
+    '''
+        "verbose" argument is reserved for simple inputs.
+    '''
 
     l1 = Queue()
-    p1 = Process(target=evaluate, args=(input, l1, ))  
+    p1 = Process(target=evaluate, args=(inputs, l1, ))  
     l2 = Queue()
-    p2 = Process(target=predict, args=(input, l2, )) 
+    p2 = Process(target=predict, args=(inputs, l2, )) 
     p1.start()   
     p2.start()     
     
     evaluations = l1.get()
     predictions = l2.get()
     
+    if verbose:
+        print_output(inputs, evaluations, predictions)
+
     return evaluations, predictions 
 
 
@@ -99,6 +105,20 @@ def output_predictions(df, eval_errors, full_predictions, measures, path_to_outp
     plt.savefig(f'{path_to_output_folder}/flow_predictions.jpg')
     plt.legend()
     plt.close()
+
+
+def print_output(inputs, evaluations, predictions):
+    
+    print ("{:<8} {:<15} {:<15} {:<10}".format('SENSOR', 'EVALUATION', 'PREDICTION', 'ERROR'))
+
+    for k in PREDICTION_KEYS:
+        
+        print ("{:<8} {:<15} {:<15} {:<10}".format( 
+            k, 
+            "FAILURE" if evaluations[0][k] else "FAULT FREE", 
+            round(predictions[k][0], 3) if evaluations[0][k] else inputs[k][0], 
+            abs(predictions[k][0]-inputs[k][0]) if evaluations[0][k] else 0
+        ))
 
 
 if __name__ == '__main__':

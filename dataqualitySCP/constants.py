@@ -1,6 +1,5 @@
 import joblib
 import json
-import keras
 import os
 
 from fuzzy_logic.mf import NormalMF
@@ -33,8 +32,12 @@ with open(f'{ROOT_DIR}/{SCALERS_REL_PATH}/Min-Max scaler.json', 'r') as f:
     EVALUATION_SCALER = json.load(f)
 
 
+# PREDICTION_MODELS_NAME = ["irradiance_model.h5", "flow_model.h5", "tamb_model.h5", "tin_model.h5", "tout_model.h5"]
+# PREDICTION_MODELS = { key: keras.models.load_model(f'{ROOT_DIR}/{PREDICTION_MODELS_REL_PATH}/{name}') for key, name in zip(KEYS, PREDICTION_MODELS_NAME) } 
+
 PREDICTION_MODELS_NAME = ["irradiance_model.h5", "flow_model.h5", "tamb_model.h5", "tin_model.h5", "tout_model.h5"]
-PREDICTION_MODELS = { key: keras.models.load_model(f'{ROOT_DIR}/{PREDICTION_MODELS_REL_PATH}/{name}') for key, name in zip(KEYS, PREDICTION_MODELS_NAME) } 
+PREDICTION_MODELS_PATH = { key: f'{ROOT_DIR}/{PREDICTION_MODELS_REL_PATH}/{name}' for key, name in zip(KEYS, PREDICTION_MODELS_NAME) } 
+
 
 PREDICTION_SCALER = joblib.load(f'{ROOT_DIR}/{SCALERS_REL_PATH}/std_scaler.bin')
 

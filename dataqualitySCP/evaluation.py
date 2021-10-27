@@ -1,4 +1,3 @@
-import json
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -34,26 +33,31 @@ def evaluate(input, l2):
     results = []
 
     for row in Xs:
-        irr, flow, tamb, tin, tout, tjump = row
+        try:
+            irr, flow, tamb, tin, tout, tjump = row
 
-        ## Evaluate Irradiance
-        inputs1, output1, rules1 = irr_normal_fis()
-        inputs2, output2, rules2 = irr_pos_fis()
-        inputs3, output3, rules3 = irr_neg_fis()
+            ## Evaluate Irradiance
+            inputs1, output1, rules1 = irr_normal_fis()
+            inputs2, output2, rules2 = irr_pos_fis()
+            inputs3, output3, rules3 = irr_neg_fis()
 
-        xtotal, xnormal, xpos, xneg = apply_PCA(KEY_IRR, np.array([tamb, irr, tjump]))
+            xtotal, xnormal, xpos, xneg = apply_PCA(KEY_IRR, np.array([tamb, irr, tjump]))
+            
+            F_irr = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+
+            ## Evaluate Flow
+            inputs1, output1, rules1 = flow_normal_fis()
+            inputs2, output2, rules2 = flow_pos_fis()
+            inputs3, output3, rules3 = flow_neg_fis()
+            
+            xtotal, xnormal, xpos, xneg = apply_PCA(KEY_FLOW, np.array([tout, tjump, flow]))
+            F_flow = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+
+            results.append({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
         
-        F_irr = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
+        except:
+            results.append({KEY_IRR: False, KEY_FLOW: False, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
 
-        ## Evaluate Flow
-        inputs1, output1, rules1 = flow_normal_fis()
-        inputs2, output2, rules2 = flow_pos_fis()
-        inputs3, output3, rules3 = flow_neg_fis()
-        
-        xtotal, xnormal, xpos, xneg = apply_PCA(KEY_FLOW, np.array([tout, tjump, flow]))
-        F_flow = is_faulty_sensor(rules1, inputs1, rules2, inputs2, rules3, inputs3, [xnormal, xpos, xneg], xtotal)
-
-        results.append({KEY_IRR: F_irr, KEY_FLOW: F_flow, KEY_TAMB: None, KEY_TIN: None, KEY_TOUT: None})
 
     l2.put(results)
 

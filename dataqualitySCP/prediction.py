@@ -1,5 +1,5 @@
+import keras
 import numpy as np
-import statistics
 
 from math import *
 
@@ -17,12 +17,14 @@ def predict(input, l1):
     predictions = {}
 
     for i, k in enumerate(KEYS):
-        if k not in PREDICTION_MODELS.keys():
+        if k not in PREDICTION_MODELS_PATH.keys() or k not in EVALUATION_KEYS:
             continue
 
         Xi = np.delete(Xs_norm, [i], 1)
 
-        model = PREDICTION_MODELS[k]
+        # model = PREDICTION_MODELS_PATH[k]
+        model = keras.models.load_model(PREDICTION_MODELS_PATH[k])
+        
         y_pred = model.predict(Xi)
         y_pred = [yi[0]*sqrt(scaler.var_[i])+scaler.mean_[i] for yi in y_pred]
 

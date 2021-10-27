@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import os
 import time
 
@@ -154,7 +155,7 @@ if __name__ == "__main__":
         process_dataset(args)    
     
     elif option == "simple":
-        input = {k: [v] for k, v in zip(KEYS, args)}
+        input = {k: np.array([v]) for k, v in zip(KEYS, args)}
         __exe__(input, verbose=True)    
     
     else: 
