@@ -109,15 +109,13 @@ def output_predictions(df, eval_errors, full_predictions, measures, path_to_outp
 
 def print_output(inputs, evaluations, predictions):
     
-    print ("{:<8} {:<15} {:<15} {:<10}".format('SENSOR', 'EVALUATION', 'PREDICTION', 'ERROR'))
+    print ("{:<8} {:<15} {:<15}".format('SENSOR', 'EVALUATION', 'PREDICTION'))
 
     for k in PREDICTION_KEYS:
-        
-        print ("{:<8} {:<15} {:<15} {:<10}".format( 
+        print ("{:<8} {:<15} {:<15} ".format( 
             k, 
             "FAILURE" if evaluations[0][k] else "FAULT FREE", 
-            round(predictions[k][0], 3) if evaluations[0][k] else inputs[k][0], 
-            abs(predictions[k][0]-inputs[k][0]) if evaluations[0][k] else 0
+            round(predictions[k][0], 3) if evaluations[0][k] else inputs[k][0]
         ))
 
 
