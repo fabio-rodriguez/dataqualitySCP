@@ -3,7 +3,7 @@ import numpy as np
 import os
 import time
 
-from .__init__ import KEYS, __exe__, process_dataset
+from .__init__ import process_dataset, process_sensors
 
 
 def parse_input():
@@ -155,9 +155,8 @@ if __name__ == "__main__":
         process_dataset(args)    
     
     elif option == "simple":
-        input = {k: np.array([v]) for k, v in zip(KEYS, args)}
-        __exe__(input, verbose=True)    
-    
+        process_sensors(*args)
+        
     else: 
         dataset_root, outputs_path = args
         process_dataset(outputs_path, dataset_root)

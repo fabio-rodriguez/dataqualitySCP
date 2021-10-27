@@ -1,6 +1,6 @@
 # dataqualitySCP
 
-This is a project for Fault Detection and Offset Prediction of sensor values in a Solar Cooling Plant (SCP). The Fault Detection and Offset Prediction processes are based in neural networks and fuzzy logic.
+This package consists in a Fault Detection and Value Prediction algorithms for sensor values in a Solar Cooling Plant (SCP). These algorithms are based on neural networks and fuzzy logic techniques that use historical data of the plant extract knowledge.
 
 
 # Installation process
@@ -15,23 +15,25 @@ Then, the dataqualitySCP package must be installed:
 
 # How to use
 
-The Fault Detection and Offset Prediction over sensors of the is a process with many steps. First a llist sensor values for an instant of time must be given: Irradiance, Flow, Ambient Temperature, Inlet Temperature and Outlet Temperature. Then, the program will detect which sensor is faulty and predicts the correct value for the sensor, so it predicts the Offset Error of the sensor.        
+For Fault Detection and Value Prediction over sensors requiere a list of sensor values for an instant of time: Irradiance, Flow, Ambient Temperature, Inlet Temperature and Outlet Temperature. Then, the program will detect which sensor is faulty and will predict the correct value of the sensor, this way the Offset Error of the sensor can be obtained.        
 
-In this initial release of the project just the prediction part is integrated. So the program, given the list of sensor inputs will predict the correct value of each sensor and the Offset Error in each case.
-
-First the installed package must be imported:
+First, the installed package must be imported:
 
 > \>\>\> import dataqualitySCP as dq
 
-To test the package the \__exe__ function must be called and the sensors input values must be manually inserted. For example:
+The algorithm receive two different kind of inputs:
 
-> \>\>\> dq.\__exe__()\
-> Irradiance: 300\
-> Flow: 12\
-> Ambient Temperature: 30\
-> Inlet Temperature: 150\
-> Outlet Temperature: 160
+1. List of values for each sensor (Simple Prediction)
 
-Then, the program will print the Predictions and the Errors.
+2. One path to a data set file and one path to an output folder (Data Set Prediction)
+
+In the first case, the 'process_sensors' function must be called and the input values of sensors must be inserted. For example:
+
+> \>\>\> dq.process_sensors(irr=300, flow=6, tamb=40, tin=120, tout=140)\
+
+Then, the program will print the Detection, Predictions and OFFSET per sensor.
+
+In the second case,
+
 
 Example of the possible input values for sensors are given in the 'data' folder.
