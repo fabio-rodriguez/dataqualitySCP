@@ -2,7 +2,7 @@ import argparse
 import os
 import time
 
-from .__init__ import KEYS, __exe__, default_validation, process_dataset
+from .__init__ import KEYS, __exe__, process_dataset
 
 
 def parse_input():
@@ -119,6 +119,9 @@ def parse_input():
         assert os.path.isfile(data_set_root), \
             f'[ERROR]: Data set file not found at "{data_set_root}"'
 
+        assert data_set_root.endswith(".csv") or data_set_root.endswith(".xlsx"), \
+            f'[ERROR]: The Data set file should have ".csv" or ".xlsx" format'
+
         assert os.path.isdir(outputs_path), \
             f'[ERROR]: Directory not found at "{outputs_path}"'
 
@@ -148,7 +151,7 @@ if __name__ == "__main__":
     t0 = time.time()
 
     if option == "default":
-        default_validation(args)    
+        process_dataset(args)    
     
     elif option == "simple":
         input = {k: [v] for k, v in zip(KEYS, args)}
@@ -156,7 +159,7 @@ if __name__ == "__main__":
     
     else: 
         dataset_root, outputs_path = args
-        process_dataset(dataset_root, outputs_path)
+        process_dataset(outputs_path, dataset_root)
 
     tf = time.time()-t0
     print(f"**Computing Time: {tf} seconds.")

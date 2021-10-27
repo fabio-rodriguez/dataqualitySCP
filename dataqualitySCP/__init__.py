@@ -1,31 +1,21 @@
-from os import error
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statistics
 
 from multiprocessing import Process, Queue
+from os import error
 
 from .constants import *
 from .evaluation import evaluate
 from .prediction import predict
 
 
-def process_input(irr, flow, tamb, tin, tout, verbose=False):
-    input = {KEY_IRR: irr, KEY_FLOW: flow, KEY_TAMB: tamb, KEY_TIN: tin, KEY_TOUT: tout}
-    return __exe__(input, verbose)
-
-
-## TODO
-def process_dataset(path_to_dataset, path_to_output_folder, verbose=False):
-    pass
-
-
-## TODO
-def default_validation(path_to_output_folder):
-    df = pd.read_csv(f'{ROOT_DIR}/{PATH_TO_DATASETS}/validation_data.csv') 
+def process_dataset(path_to_output_folder, path_to_dataset=f'{ROOT_DIR}/{PATH_TO_DATASETS}/validation_data.csv'):
     
-    # IRR,INPUT_IRR,FAULT_IRR
-    reals = {key: df[{key}] for key in KEYS}
+    df = pd.read_csv(f'{path_to_dataset}') if path_to_dataset.endswith(".csv") else pd.read_excel(f'{path_to_dataset}')
+
+    reals = {key: df[key] for key in KEYS}
     inputs = {key: df[f"INPUT_{key}"] for key in KEYS}
     faults = {key: df[f"FAULT_{key}"] for key in KEYS}
     
@@ -37,7 +27,7 @@ def default_validation(path_to_output_folder):
     
     for key in EVALUATION_KEYS:
         for i, e in enumerate(evaluations):
-            eval_errors.append(e[key] == bool(faults[key][i]))
+            eval_errors[key].append(e[key] == bool(faults[key][i]))
             
             if not e[key]:
                 full_predictions[key].append(inputs[key][i])
@@ -45,14 +35,13 @@ def default_validation(path_to_output_folder):
                 full_predictions[key].append(predictions[key][i])
                 pred_errors[key].append(abs(predictions[key][i]-reals[key][i])) 
 
-    measures = { key: {
-                    "EVAL_ERROR": sum(eval_errors[key])/len(eval_errors[key]), 
-                    "MEAN_ERROR": sum(pred_errors[key])/len(pred_errors[key]), 
-                    "STD_ERROR": statistics.stdev(pred_errors[key])
-                } for key in EVALUATION_KEYS }
+    measures = {key:{
+                        "EVAL_ERROR": sum(eval_errors[key])/len(eval_errors[key]), 
+                        "MEAN_ERROR": sum(pred_errors[key])/len(pred_errors[key]), 
+                        "STD_ERROR": statistics.stdev(pred_errors[key])
+                    } for key in EVALUATION_KEYS }
 
-    ## Crear output file and output dataframe 
-    return measures, full_predictions
+    output_predictions(df, eval_errors, full_predictions, measures, path_to_output_folder)
 
 
 def __exe__(input):
@@ -70,17 +59,46 @@ def __exe__(input):
     return evaluations, predictions 
 
 
-def print_errors(eval_error, pred_error):
+def output_predictions(df, eval_errors, full_predictions, measures, path_to_output_folder):
     
-    print ("{:<8} {:<20} {:<20} {:<20}".format('SENSOR', 'EVAL_ACCURACY', 'PRED_MEAN_ERROR', 'PRED_STD_ERROR'))
+    headers = [
+        "Hour",
+        "IRR", "INPUT_IRR", "FAULT_IRR", "DETECTION_IRR", "PREDICTION_IRR", 
+        "FLOW", "INPUT_FLOW", "FAULT_FLOW", "DETECTION_FLOW", "IRR_PREDICTION_FLOW",
+        "TAMB", "INPUT_TAMB", "FAULT_TAMB",     # "DETECTION_TAMB", "PREDICTION_TAMB",
+        "TIN", "INPUT_TIN", "FAULT_TIN",        # "DETECTION_TIN", "PREDICTION_TIN",
+        "TOUT", "INPUT_TOUT", "FAULT_TOUT",     # "DETECTION_TOUT", "PREDICTION_TOUT"
+    ]
+    data = np.array([
+        df['Hour'],
+        df["IRR"], df["INPUT_IRR"], df["FAULT_IRR"], eval_errors["IRR"], full_predictions["IRR"],
+        df["FLOW"], df["INPUT_FLOW"], df["FAULT_FLOW"], eval_errors["FLOW"], full_predictions["FLOW"],
+        df["TAMB"], df["INPUT_TAMB"], df["FAULT_TAMB"],     # eval_errors["TAMB"], full_predictions["TAMB"],
+        df["TIN"], df["INPUT_TIN"], df["FAULT_TIN"],        # eval_errors["TIN"], full_predictions["TIN"],
+        df["TOUT"], df["INPUT_TOUT"], df["FAULT_TOUT"],     # eval_errors["TOUT"], full_predictions["TOUT"]
+    ]) 
+    output_data = pd.DataFrame(np.transpose(data), columns=headers)
+    output_data.to_csv(f'{path_to_output_folder}/output.csv', index=True)
 
-    for k in PREDICTION_KEYS:
-        print ("{:<8} {:<20} {:<20} {:<20}".format( 
-            k, 
-            'nil',# str(round(sum(eval_error[k])/len(eval_error[k]), 3)),
-            str(round(pred_error[k]['MEAN_ERROR'], 3)),
-            str(round(pred_error[k]['STD_ERROR'], 3)),
-        ))
+    headers = ["SENSOR", "DETECTION_PRECISION", "MEAN_PREDICTION_ERROR", "STD_PREDICTION_ERROR"] 
+    data = np.array([
+        [KEY_IRR, measures[KEY_IRR]["EVAL_ERROR"], measures[KEY_IRR]["MEAN_ERROR"], measures[KEY_IRR]["STD_ERROR"]],
+        [KEY_FLOW, measures[KEY_FLOW]["EVAL_ERROR"], measures[KEY_FLOW]["MEAN_ERROR"], measures[KEY_FLOW]["STD_ERROR"]] 
+    ]) 
+    measures_data = pd.DataFrame(data, columns=headers)
+    measures_data.to_csv(f'{path_to_output_folder}/measures.csv', index=True)
+
+    plt.plot(df['Hour'], df["IRR"], "-b", label="Irr Real Data", linewidth=3)
+    plt.plot(df['Hour'], full_predictions["IRR"], ".r", label="Predictions", markersize=1)
+    plt.savefig(f'{path_to_output_folder}/irr_predictions.jpg')
+    plt.legend()
+    plt.close()
+
+    plt.plot(df['Hour'], df["FLOW"], "-b", label="Flow Real Data", linewidth=3)
+    plt.plot(df['Hour'], full_predictions["FLOW"], ".r", label="Predictions", markersize=1)
+    plt.savefig(f'{path_to_output_folder}/flow_predictions.jpg')
+    plt.legend()
+    plt.close()
 
 
 if __name__ == '__main__':
