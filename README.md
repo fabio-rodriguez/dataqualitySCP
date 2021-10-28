@@ -53,11 +53,11 @@ An example of the validation data set is given in 'data/validation_data.csv' fil
 
 To make predictions in the data set file the funcion 'process_dataset' is used:
 
-> \>\>\> dq.process_dataset(path_to_output_folder="path/to/output/folder/", path_to_dataset="path/to/validation/data.csv")
+> \>\>\> dq.process_dataset(path_to_output_folder="path/to/output/", path_to_dataset="path/to/data.csv")
 
 Also, the data set prediction can be invoked directly like below:
 
->$\> python -m dataqualitySCP --data-set-prediction --data-set-root "PATH/TO/VALIDATION/DATA.csv" --outputs-path "PATH/TO/OUTPUT/FOLDER/"
+>$\> python -m dataqualitySCP --data-set-prediction --data-set-root "path/to/data.csv" --outputs-path "path/to/output/"
 
 Then, the program will retrieve the 'output.csv' file with the following information per sensor:
 
@@ -74,4 +74,4 @@ The corresponding output for the 'data/validation_data.csv' file is given in the
 
 The algorithm process the 'data/validation_data.csv' file by default as follows:
 
->$\> python -m dataqualitySCP --default-validation --outputs-path "PATH/TO/OUTPUT/FOLDER/"
+>$\> python -m dataqualitySCP --default-validation --outputs-path "path/to/output/"
